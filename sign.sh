@@ -5,7 +5,7 @@
 set -o pipefail
 
 # Shared content to use as header template
-header_template='{
+h_template='{
     "typ": "JWT",
     "kid": "0001",
     "iss": "9134417ABCD42@ComanyOrg",
@@ -22,7 +22,7 @@ build_header() {
         | .alg = $alg
         | .iat = $iat
         | .exp = ($iat + 1)
-        ' <<<"$header_template" | tr -d '\n'
+        ' <<<"$h_template" | tr -d '\n'
 }
 
 b64enc() { openssl enc -base64 -A | tr '+/' '-_' | tr -d '='; }
@@ -35,7 +35,7 @@ sign() {
         local algo payload header sig secret=$3
         algo=${1:-RS256}; algo=${algo^^}
         header=$(build_header "$algo") || return
-        payload=${2:-$test_payload}
+        payload=${2:-$t_payload}
         signed_content="$(json <<<"$header" | b64enc).$(json <<<"$payload" | b64enc)"
         case $algo in
                 HS*) sig=$(printf %s "$signed_content" | hs_sign "${algo#HS}" "$secret" | b64enc) ;;
